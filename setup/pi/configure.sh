@@ -161,11 +161,25 @@ function install_archive_scripts () {
   fi
 }
 
+function install_python3_pip () {
+  if ! command -v pip3 &> /dev/null
+  then
+    setup_progress "Installing support for python packages..."
+    apt-get --assume-yes install python3-pip
+  fi
+}
 
-function install_python_packages () {
-  setup_progress "Installing python packages..."
-  apt-get --assume-yes install python3-pip
+function install_sns_packages () {
+  install_python_pip3
+  setup_progress "Installing sns python packages..."
   pip3 install boto3
+}
+
+function install_matrix_packages () {
+  install_python_pip3
+  setup_progress "Installing matrix python packages..."
+  pip3 install matrix_client
+  curlwrapper -o /root/bin/matrixcli https://raw.githubusercontent.com/saadrushd/matrixcli/23f29933746c38442a5b0f0d94520b5f544a90a4/matrixcli
 }
 
 function check_pushover_configuration () {
@@ -238,6 +252,27 @@ function check_webhook_configuration () {
         elif [ "${WEBHOOK_URL}" = "http://domain/path/" ]
         then
             log_progress "STOP: You're trying to setup a Webhook, but didn't replace the default url."
+            exit 1
+        fi
+    fi
+}
+
+function check_matrix_configuration () {
+    # shellcheck disable=SC2154
+    if [ -n "${MATRIX_ENABLED+x}" ]
+    then
+        if [ -z "${MATRIX_SERVER_URL+x}"  ] || [ -z "${MATRIX_USERNAME+x}"  ] || [ -z "${MATRIX_PASSWORD+x}"  ] || [ -z "${MATRIX_ROOM+x}"  ]
+        then
+            log_progress "STOP: You're trying to setup Matrix but didn't provide your server URL, username, password or room."
+            log_progress "Define the variable like this:"
+            log_progress "export MATRIX_SERVER_URL=https://matrix.org/"
+            log_progress "export MATRIX_USERNAME=put_your_matrix_username_here"
+            log_progress "export MATRIX_PASSWORD='put_your_matrix_password_here'"
+            log_progress "export MATRIX_ROOM='put_the_matrix_target_room_id_here'"
+            exit 1
+        elif [ "${MATRIX_USERNAME}" = "put_your_matrix_username_here" ] || [ "${MATRIX_PASSWORD}" = "put_your_matrix_password_here" ] ||[ "${MATRIX_ROOM}" = "put_the_matrix_target_room_id_here" ]
+        then
+            log_progress "STOP: You're trying to setup Matrix, but didn't replace the default username, password or target room."
             exit 1
         fi
     fi
@@ -347,6 +382,29 @@ function configure_webhook () {
     fi
 }
 
+function configure_matrix () {
+    if [ -n "${MATRIX_ENABLED+x}" ]
+    then
+        log_progress "Enabling Matrix"
+        {
+            echo "export MATRIX_ENABLED=true"
+            echo "export MATRIX_SERVER_URL=$MATRIX_SERVER_URL"
+            echo "export MATRIX_ROOM='$MATRIX_ROOM'"
+        } > /root/.teslaCamMatrixSettings
+        mkdir -p /root/.config/matrixcli/
+        {
+	    echo "def password_eval():"
+	    echo "    return '$MATRIX_PASSWORD'"
+	    echo ""
+	    echo "accounts=[{'server': '$MATRIX_SERVER_URL', 'username': '$MATRIX_USERNAME', 'passeval': password_eval}]"
+        } > /root/.config/matrixcli/config.py
+
+    else
+        log_progress "Matrix not configured."
+    fi
+}
+
+
 function configure_sns () {
     # shellcheck disable=SC2154
     if [ -n "${sns_enabled+x}" ]
@@ -364,7 +422,7 @@ function configure_sns () {
         echo "export sns_enabled=true" > /root/.teslaCamSNSTopicARN
         echo "export sns_topic_arn=$aws_sns_topic_arn" >> /root/.teslaCamSNSTopicARN
 
-        install_python_packages
+        install_sns_packages
     else
         log_progress "SNS not configured."
     fi
@@ -392,6 +450,12 @@ function check_and_configure_webhook () {
     check_webhook_configuration
 
     configure_webhook
+}
+
+function check_and_configure_matrix () {
+    check_matrix_configuration
+
+    configure_matrix
 }
 
 function check_and_configure_telegram () {
@@ -424,6 +488,7 @@ check_and_configure_pushover
 check_and_configure_gotify
 check_and_configure_ifttt
 check_and_configure_webhook
+check_and_configure_matrix
 check_and_configure_telegram
 check_and_configure_sns
 install_push_message_scripts /root/bin

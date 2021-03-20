@@ -49,6 +49,14 @@ function send_sns () {
   python3 /root/bin/send_sns.py -t "$sns_topic_arn" -s "$TITLE" -m "$MESSAGE"
 }
 
+function send_matrix() {
+  log "Send Matrix message."
+
+  source /root/.teslaCamMatrixSettings
+
+  python3 /root/bin/matrixcli send -r "$MATRIX_ROOM" "$MESSAGE"
+}
+
 function send_telegram () {
   if [ -n "${TELEGRAM_ENABLED+x}" ]
   then
@@ -79,4 +87,5 @@ log "$MESSAGE"
 [ -r "/root/.teslaCamIftttSettings" ] && send_ifttt
 [ -r "/root/.teslaCamSNSTopicARN" ] && send_sns
 [ -r "/root/.teslaCamWebhookSettings" ] && send_webhook
+[ -r "/root/.teslaCamMatrixSettings" ] && send_matrix
 send_telegram
