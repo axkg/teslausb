@@ -170,13 +170,13 @@ function install_python3_pip () {
 }
 
 function install_sns_packages () {
-  install_python_pip3
+  install_python3_pip
   setup_progress "Installing sns python packages..."
   pip3 install boto3
 }
 
 function install_matrix_packages () {
-  install_python_pip3
+  install_python3_pip
   setup_progress "Installing matrix python packages..."
   apt-get --assume-yes install python3-gi
   pip3 install matrix_client
