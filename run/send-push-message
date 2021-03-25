@@ -54,6 +54,11 @@ function send_matrix() {
 
   source /root/.teslaCamMatrixSettings
 
+  if [ -z ${HOME+x} ]
+  then
+      export HOME=/root
+  fi
+
   python3 /root/bin/matrixcli send -r "$MATRIX_ROOM" "$MESSAGE"
 }
 
