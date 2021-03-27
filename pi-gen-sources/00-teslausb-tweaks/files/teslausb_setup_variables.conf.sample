@@ -128,6 +128,13 @@ export WIFIPASS='your_pass'
 # export WEBHOOK_ENABLED=true
 # export WEBHOOK_URL=http://domain/path
 
+# Uncomment if setting up Matrix notifications
+# export MATRIX_ENABLED=true
+# export MATRIX_SERVER_URL=https://matrix.org/
+# export MATRIX_USERNAME=put_your_matrix_username_here
+# export MATRIX_PASSWORD='put_your_matrix_password_here'
+# export MATRIX_ROOM='put_the_matrix_target_room_id_here'
+
 # tesla_dashcam / Trigger file support.
 # Uncomment any TRIGGER_FILE_xxxxx below to create trigger file(s) in the
 # archive directory for the listed clip type after all clips have been
