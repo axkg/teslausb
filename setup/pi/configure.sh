@@ -369,9 +369,6 @@ function configure_webhook () {
 }
 
 function configure_matrix () {
-  # remove legacy file
-  rm -f /root/.teslaCamMatrixSettings
-
   if [ "${MATRIX_ENABLED:-false}" = "true" ]
   then
     log_progress "Enabling Matrix"

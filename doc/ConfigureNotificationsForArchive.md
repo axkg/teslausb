@@ -102,7 +102,7 @@ You can choose to send notifications via [Telegram](https://telegram.org/). This
 # Matrix
 Matrix is a federated messaging protocol that can be used via [Matrix.org](https://matrix.org) or self hosted homeservers. Matrix can be used via a web browser or one of the [many available clients](https://matrix.org/clients/).
 
-1. Create an account for your bot on either on [matrix.org](https://matrix.org) or your own homeserver
+1. Create an account for your bot either on [matrix.org](https://matrix.org) or your own homeserver
 2. Create a room where you want to send the notifications to, either as the bot user or invite and join the bot user to the room
 3. Navigate to the room settings to discover the "Internal room ID"
 4. Remove the comments and update the following values in the ```teslausb_setup_variables.conf``` file with the gathered information. Use of `'` is required for MATRIX_PASSWORD and MATRIX_ROOM:
