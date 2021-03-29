@@ -45,7 +45,7 @@ function send_matrix() {
       export HOME=/root
   fi
 
-  python3 /root/bin/matrixcli send -r "$MATRIX_ROOM" "$message"
+  python3 /root/bin/send_matrix.py "$MATRIX_SERVER_URL" "$MATRIX_USERNAME" "$MATRIX_PASSWORD" "$MATRIX_ROOM" "$message"
 }
 
 function send_telegram () {

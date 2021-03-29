@@ -176,10 +176,7 @@ function install_sns_packages () {
 function install_matrix_packages () {
   install_python3_pip
   setup_progress "Installing matrix python packages..."
-  apt-get --assume-yes install python3-gi
   pip3 install matrix_client
-  # matrixcli is currently not available via pip
-  curlwrapper -o /root/bin/matrixcli https://raw.githubusercontent.com/saadrushd/matrixcli/23f29933746c38442a5b0f0d94520b5f544a90a4/matrixcli
 }
 
 function check_pushover_configuration () {
@@ -372,14 +369,6 @@ function configure_matrix () {
   if [ "${MATRIX_ENABLED:-false}" = "true" ]
   then
     log_progress "Enabling Matrix"
-    mkdir -p /root/.config/matrixcli/
-    {
-      echo "def password_eval():"
-      echo "    return '$MATRIX_PASSWORD'"
-      echo ""
-      echo "accounts=[{'server': '$MATRIX_SERVER_URL', 'username': '$MATRIX_USERNAME', 'passeval': password_eval}]"
-    } > /root/.config/matrixcli/config.py
-
     install_matrix_packages
   else
     log_progress "Matrix not configured."
@@ -452,6 +441,7 @@ function install_push_message_scripts() {
   local install_path="$1"
   get_script "$install_path" send-push-message run
   get_script "$install_path" send_sns.py run
+  get_script "$install_path" send_matrix.py run
 }
 
 if [[ $EUID -ne 0 ]]
