@@ -11,6 +11,15 @@ if len(sys.argv) != 6:
 
 (homeserver, username, password, room_id, message) = sys.argv[1:6]
 
+if homeserver.endswith('/'):
+    homeserver = homeserver[:-1]
+
+if username.startswith('@'):
+    username = username[1:]
+
+if username.find(':') > 0:
+    username = username.split(':')[0]
+
 matrix = None
 
 for retry in range(0, 4):
