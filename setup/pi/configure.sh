@@ -258,7 +258,7 @@ function check_matrix_configuration () {
       then
           log_progress "STOP: You're trying to setup Matrix but didn't provide your server URL, username, password or room."
           log_progress "Define the variable like this:"
-          log_progress "export MATRIX_SERVER_URL=https://matrix.org/"
+          log_progress "export MATRIX_SERVER_URL=https://matrix.org"
           log_progress "export MATRIX_USERNAME=put_your_matrix_username_here"
           log_progress "export MATRIX_PASSWORD='put_your_matrix_password_here'"
           log_progress "export MATRIX_ROOM='put_the_matrix_target_room_id_here'"
