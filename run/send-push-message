@@ -40,11 +40,6 @@ function send_sns () {
 function send_matrix() {
   log "Send Matrix message."
 
-  if [ -z ${HOME+x} ]
-  then
-      export HOME=/root
-  fi
-
   python3 /root/bin/send_matrix.py "$MATRIX_SERVER_URL" "$MATRIX_USERNAME" "$MATRIX_PASSWORD" "$MATRIX_ROOM" "$message"
 }
 
