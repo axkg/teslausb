@@ -130,7 +130,7 @@ export WIFIPASS='your_pass'
 
 # Uncomment if setting up Matrix notifications
 # export MATRIX_ENABLED=true
-# export MATRIX_SERVER_URL=https://matrix.org/
+# export MATRIX_SERVER_URL=https://matrix.org
 # export MATRIX_USERNAME=put_your_matrix_username_here
 # export MATRIX_PASSWORD='put_your_matrix_password_here'
 # export MATRIX_ROOM='put_the_matrix_target_room_id_here'
