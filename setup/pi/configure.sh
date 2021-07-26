@@ -232,7 +232,7 @@ function install_sns_packages () {
 function install_matrix_packages () {
   install_python3_pip
   setup_progress "Installing matrix python packages..."
-  pip3 install matrix_client
+  pip3 install matrix-nio
 }
 
 function check_pushover_configuration () {

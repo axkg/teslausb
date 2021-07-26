@@ -1,9 +1,10 @@
 #!/usr/bin/env python3
 import sys
 import time
-from matrix_client.errors import MatrixHttpLibError
-from matrix_client.client import MatrixClient
-from matrix_client.api import MatrixHttpApi
+import asyncio
+import socket
+
+from nio import AsyncClient, LoginResponse
 
 if len(sys.argv) != 6:
     sys.stderr.write('usage: %s HOMESERVER_URL USERNAME PASSWORD ROOM_ID MESSAGE_TEXT\n' % sys.argv[0])
@@ -20,24 +21,23 @@ if username.startswith('@'):
 if username.find(':') > 0:
     username = username.split(':')[0]
 
-matrix = None
+async def main() -> None:
+    client = AsyncClient(homeserver, username)
+    response = await client.login(password, device_name=socket.gethostname())
 
-for retry in range(0, 4):
-    try:
-        client = MatrixClient(homeserver)
-        token = client.login(username, password)
-        matrix = MatrixHttpApi(homeserver, token)
-        break
-    except MatrixHttpLibError:
-        sys.stderr.write('Connection failed, retrying...\n')
-        time.sleep(0.25)
+    if not isinstance(response, LoginResponse):
+        sys.stderr.write('Failed to connect to Matrix server.\n')
+        sys.exit(-1)
 
-if matrix == None:
-    sys.stderr.write('Could not connect to homeserver. Message not sent.\n')
-    sys.exit(-2)
+    await client.room_send(
+        room_id=room_id,
+        message_type="m.room.message",
+        content = {
+            "msgtype": "m.text",
+            "body": message
+        }
+    )
+    await client.sync(timeout=30000)
+    sys.exit(0)
 
-try:
-    client.rooms[room_id].send_text(message)
-except:
-    sys.stderr.write('Failed to send message to room.\n')
-    sys.exit(-3)
+asyncio.get_event_loop().run_until_complete(main())
