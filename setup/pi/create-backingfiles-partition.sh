@@ -9,12 +9,6 @@ function log_progress () {
   echo "create-backingfiles-partition: $1"
 }
 
-# install XFS tools if needed
-if ! hash mkfs.xfs
-then
-  apt-get -y --force-yes install xfsprogs
-fi
-
 # Will check for USB Drive before running sd card
 if [ -n "$USB_DRIVE" ]
 then
@@ -35,7 +29,7 @@ then
     log_progress "Formatting new partitions..."
     # Force creation of filesystems even if previous filesystem appears to exist
     mkfs.ext4 -F -L mutable /dev/sda1
-    mkfs.xfs -f -m reflink=1 -L backingfiles /dev/sda2
+    mkfs.ext4 -F -L backingfiles /dev/sda2
   fi
 
   BACKINGFILES_MOUNTPOINT="$1"
@@ -44,7 +38,7 @@ then
   then
     log_progress "backingfiles already defined in /etc/fstab. Not modifying /etc/fstab."
   else
-    echo "LABEL=backingfiles $BACKINGFILES_MOUNTPOINT xfs auto,rw,noatime 0 2" >> /etc/fstab
+    echo "LABEL=backingfiles $BACKINGFILES_MOUNTPOINT ext4 auto,rw,noatime 0 2" >> /etc/fstab
   fi
   if grep -q 'mutable' /etc/fstab
   then
@@ -56,50 +50,6 @@ then
   exit 0
 else
   echo "USB_DRIVE not set. Proceeding to SD card setup"
-fi
-
-# If partition 3 is the backingfiles partition, type xfs, and
-# partition 4 the mutable partition, type ext4, then return early.
-if [ /dev/disk/by-label/backingfiles -ef "${BOOT_DEVICE_PART}3" ] && \
-    [ /dev/disk/by-label/mutable -ef "${BOOT_DEVICE_PART}4" ] && \
-    blkid "${BOOT_DEVICE_PART}4" | grep -q 'TYPE="ext4"'
-then
-  if blkid "${BOOT_DEVICE_PART}3" | grep -q 'TYPE="xfs"'
-  then
-    # assume these were either created previously by the setup scripts,
-    # or manually by the user, and that they're big enough
-    log_progress "using existing backingfiles and mutable partitions"
-    return &> /dev/null || exit 0
-  elif blkid "${BOOT_DEVICE_PART}3" | grep -q 'TYPE="ext4"'
-  then
-    # special case: convert existing backingfiles from ext4 to xfs
-    log_progress "reformatting existing backingfiles as xfs"
-    killall archiveloop || true
-    modprobe -r g_mass_storage
-    if mount | grep -qw "/mnt/cam"
-    then
-      if ! umount /mnt/cam
-      then
-        log_progress "STOP: couldn't unmount /mnt/cam"
-        exit 1
-      fi
-    fi
-    if mount | grep -qw "/backingfiles"
-    then
-      if ! umount /backingfiles
-      then
-        log_progress "STOP: couldn't unmount /backingfiles"
-        exit 1
-      fi
-    fi
-    mkfs.xfs -f -m reflink=1 -L backingfiles "${BOOT_DEVICE_PART}3"
-
-    # update /etc/fstab
-    sed -i 's/LABEL=backingfiles .*/LABEL=backingfiles \/backingfiles xfs auto,rw,noatime 0 2/' /etc/fstab
-    mount /backingfiles
-    log_progress "backingfiles converted to xfs and mounted"
-    return &> /dev/null || exit 0
-  fi
 fi
 
 # partition 3 and 4 either don't exist, or are the wrong type
@@ -158,8 +108,8 @@ sed -i "s/${ORIGINAL_DISK_IDENTIFIER}/${NEW_DISK_IDENTIFIER}/" /boot/cmdline.txt
 
 log_progress "Formatting new partitions..."
 # Force creation of filesystems even if previous filesystem appears to exist
-mkfs.xfs -f -m reflink=1 -L backingfiles "${BOOT_DEVICE_PART}3"
+mkfs.ext4 -F -L backingfiles "${BOOT_DEVICE_PART}3"
 mkfs.ext4 -F -N "$NUM_MUTABLE_INODES" -L mutable "${BOOT_DEVICE_PART}4"
 
-echo "LABEL=backingfiles $BACKINGFILES_MOUNTPOINT xfs auto,rw,noatime 0 2" >> /etc/fstab
+echo "LABEL=backingfiles $BACKINGFILES_MOUNTPOINT ext4 auto,rw,noatime 0 2" >> /etc/fstab
 echo "LABEL=mutable $MUTABLE_MOUNTPOINT ext4 auto,rw 0 2" >> /etc/fstab
